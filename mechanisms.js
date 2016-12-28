@@ -7,7 +7,7 @@ module.exports = {
 	version: {
 		description: 'The SPF record version',
 		pattern: /^v=(.+)$/,
-		validate: r => {
+		validate(r) {
 			let version = r.match(this.pattern)[1];
 			if (version !== 'spf1') {
 				throw new MechanismError(`Invalid version '${version}', must be 'spf1'`);
@@ -51,7 +51,7 @@ module.exports = {
 	},
 	exists: {
 		pattern: /^exists:(.+)$/,
-		validate: r => {
+		validate(r) {
 			let domain = r.match(this.pattern)[1];
 			if (!tld.isValid(domain)) {
 				throw new MechanismError('Invalid domain: \'domain\'', 'warning');
@@ -64,7 +64,7 @@ module.exports = {
 	include: {
 		description: 'The specified domain is searched for an \'allow\'',
 		pattern: /^include:(.+)$/,
-		validate: r => {
+		validate(r) {
 			let domain = r.match(this.pattern)[1];
 			if (!tld.isValid(domain)) {
 				throw new MechanismError('Invalid domain: \'domain\'', 'error');

@@ -41,9 +41,6 @@ function parseTerm(term, messages) {
 				record.prefix = qualifier;
 				record.prefixdesc = QUALIFIERS[qualifier];
 			}
-			else if (versionRegex.test(mechanism)) {
-				record.prefix = 'v';
-			}
 			else {
 				messages.push({
 					message: `Unknown qualifier: '${qualifier}' in term '${term}'`,
@@ -53,6 +50,9 @@ function parseTerm(term, messages) {
 				return;
 			}
 		}
+		else if (versionRegex.test(mechanism)) {
+			record.prefix = 'v';
+		}
 		else {
 			// Default to "pass" qualifier
 			record.prefix = '+';
@@ -61,14 +61,16 @@ function parseTerm(term, messages) {
 
 		for (let name in MECHANISMS) {
 			if (Object.prototype.hasOwnProperty.call(MECHANISMS, name)) {
-				let settings = MECHANISMS[name];
+				const settings = MECHANISMS[name];
+
+				// Matches mechanism spec
 				if (settings.pattern.test(mechanism)) {
 					record.type = name;
 					record.description = settings.description;
 
 					if (settings.validate) {
 						try {
-							let value = settings.validate.bind(settings).call(mechanism);
+							let value = settings.validate.call(settings, mechanism);
 							record.value = value;
 						}
 						catch (err) {
@@ -85,6 +87,8 @@ function parseTerm(term, messages) {
 							}
 						}
 					}
+
+					break;
 				}
 			}
 		}
@@ -146,6 +150,10 @@ function parse(record) {
 
 	// TODO: check for this error below
 	// One or more mechanisms were found after the "all" mechanism. These mechanisms will be ignored.records.
+
+	if (!Object.keys(records.messages).length > 0) {
+		delete records.messages;
+	}
 
 	return records;
 }

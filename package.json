@@ -4,10 +4,12 @@
   "description": "Parse SPF (Sender Polify Framework) records",
   "main": "index.js",
   "scripts": {
-    "test": "xo && ava"
+    "test": "xo && nyc ava"
   },
   "files": [
-    "index.js"
+    "index.js",
+    "mechanisms.js",
+    "mechanismerror.js"
   ],
   "repository": {
     "type": "git",
@@ -21,7 +23,10 @@
   "homepage": "https://github.com/softvu/spf-parse#readme",
   "devDependencies": {
     "ava": "^0.17.0",
+    "coveralls": "^2.11.15",
     "cz-conventional-changelog": "^1.2.0",
+    "nyc": "^10.0.0",
+    "tap": "^8.0.1",
     "xo": "^0.17.1"
   },
   "xo": {
@@ -29,7 +34,12 @@
     "rules": {
       "prefer-const": 0,
       "no-negated-condition": 0,
-      "brace-style": ["error", "stroustrup"]
+      "brace-style": [
+        "error",
+        "stroustrup"
+      ],
+      "no-debugger": ["warn"],
+      "no-useless-call": 0
     }
   },
   "config": {
