@@ -25,11 +25,19 @@
     "xo": "^0.17.1"
   },
   "xo": {
-    "esnext": true
+    "esnext": true,
+    "rules": {
+      "prefer-const": 0,
+      "no-negated-condition": 0,
+      "brace-style": ["error", "stroustrup"]
+    }
   },
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "dependencies": {
+    "tldjs": "^1.7.0"
   }
 }

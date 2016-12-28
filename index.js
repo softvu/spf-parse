@@ -1,33 +1,17 @@
 'use strict';
 
+const MechanismError = require('./mechanismerror');
+const MECHANISMS = require('./mechanisms');
+
 const QUALIFIERS = {
 	'+': 'Pass',
 	'-': 'Fail',
 	'~': 'SoftFail',
 	'?': 'Neutral'
 };
-const MECHANISMS = {
-	all: { description: 'Always matches. It goes at the end of your record' },
-	ip4: { description: 'Match if IP is in the given range' },
-	ip6: {},
-	a: {
-		description: "Match if IP has a DNS 'A' record in given domain"
-	},
-	mx: {},
-	ptr: {
-		// ptr
-		// ptr:<domain>
-	},
-	exists: {
-		validate: r => {} // Domain name
-	},
-	include: {
-		description: "The specified domain is searched for an 'allow'",
-		validate: r => {} // Domain name
-	},
-};
-const versionTest = /^v=spf1/;
-const mechanismRegex = /(.)?(.+)/;
+
+const versionRegex = /^v=spf1/;
+const mechanismRegex = /(\+|-|~|\?)?(.+)/;
 
 // TODO: Include warning message in the return object
 // SPF strings should always either use an "all" mechanism
@@ -39,30 +23,133 @@ const mechanismRegex = /(.)?(.+)/;
 // PrefixDesc
 // Description
 
-module.exports = record => {
+function parseTerm(term, messages) {
+	// Match up the prospective mechanism against the mechanism regex
+	let parts = term.match(mechanismRegex);
+
+	let record = {};
+
+	// It matched! Let's try to see which specific mechanism type it matches
+	if (parts !== null) {
+		// Break up the parts into their pieces
+		let qualifier = parts[1];
+		let mechanism = parts[2];
+
+		// Check qualifier
+		if (qualifier) {
+			if (QUALIFIERS[qualifier]) {
+				record.prefix = qualifier;
+				record.prefixdesc = QUALIFIERS[qualifier];
+			}
+			else if (versionRegex.test(mechanism)) {
+				record.prefix = 'v';
+			}
+			else {
+				messages.push({
+					message: `Unknown qualifier: '${qualifier}' in term '${term}'`,
+					type: 'error'
+				});
+
+				return;
+			}
+		}
+		else {
+			// Default to "pass" qualifier
+			record.prefix = '+';
+			record.prefixdesc = QUALIFIERS['+'];
+		}
+
+		for (let name in MECHANISMS) {
+			if (Object.prototype.hasOwnProperty.call(MECHANISMS, name)) {
+				let settings = MECHANISMS[name];
+				if (settings.pattern.test(mechanism)) {
+					record.type = name;
+					record.description = settings.description;
+
+					if (settings.validate) {
+						try {
+							let value = settings.validate.bind(settings).call(mechanism);
+							record.value = value;
+						}
+						catch (err) {
+							if (err instanceof MechanismError) {
+								// Error validating mechanism
+								messages.push({
+									message: err.message,
+									type: err.type
+								});
+								break;
+							}
+							else {
+								throw err;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	else {
+		// Term didn't match mechanism regex
+		messages.push({
+			message: `Unknown term "${term}"`,
+			type: 'error'
+		});
+
+		return;
+	}
+
+	return record;
+}
+
+function parse(record) {
 	// Remove whitespace
 	record = record.trim();
 
-	if (!versionTest.test(record)) {
-		throw new Exception('No valid version');
+	let records = {
+		mechanisms: [],
+		messages: []
+	};
+
+	if (!versionRegex.test(record)) {
+		// throw new Error();
+		records.messages.push({
+			message: 'No valid version found, record must start with \'v=spf1\'',
+			type: 'error'
+		});
+
+		return records;
 	}
 
-	let mechanisms = record.split(/\s+/);
+	let terms = record.split(/\s+/);
 
-	let records = [];
-	let messages = [];
-	mechanisms.forEach(m => {
-		let parts = m.match(mechanismRegex);
-	});
+	for (let term of terms) {
+		let mechanism = parseTerm(term, records.messages);
+
+		if (mechanism) {
+			records.mechanisms.push(mechanism);
+		}
+	}
 
 	// TODO: check for duplicate mechanisms, which is a warning
 
 	// See if there's an "all" or "redirect" at the end of the policy
-	const lastMech = mechanisms[mechanisms.length - 1].type;
-	if (lastMech.type !== 'all' && lastMech !== 'redirect') {
-		messages.push({ type: 'warning', message: 'SPF strings should always either use an "all" mechanism or a "redirect" modifier to explicitly terminate processing.' });
+	if (records.length > 0) {
+		let lastMech = records[records.length - 1];
+		if (lastMech.type !== 'all' && lastMech !== 'redirect') {
+			records.messages.push({
+				type: 'warning',
+				message: 'SPF strings should always either use an "all" mechanism or a "redirect" modifier to explicitly terminate processing.'
+			});
+		}
 	}
 
-	//
-	// One or more mechanisms were found after the "all" mechanism. These mechanisms will be ignored.
-};
+	// TODO: check for this error below
+	// One or more mechanisms were found after the "all" mechanism. These mechanisms will be ignored.records.
+
+	return records;
+}
+
+parse.parseTerm = parseTerm;
+
+module.exports = parse;
