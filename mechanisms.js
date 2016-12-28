@@ -33,14 +33,22 @@ function domainPrefixCheck(name, pattern, term) {
 }
 
 function domainCheckNullable(name, pattern, term) {
+	return domainCheck(name, pattern, term, true);
+}
+
+function domainCheck(name, pattern, term, nullable = false) {
 	let value = term.match(pattern)[1];
 
-	if (value === ':') {
+	if (!nullable && !value) {
+		throw new MechanismError(`Missing mandatory argument for the '${name}' mechanism`, 'error');
+	}
+
+	if (value === ':' || value === '=') {
 		throw new MechanismError(`Blank argument for the '${name}' mechanism`, 'error');
 	}
 
-	if (/^:/.test(value)) {
-		value = value.replace(/^:/, '');
+	if (/^(:|\=)/.test(value)) {
+		value = value.replace(/^(:|\=)/, '');
 
 		if (!tld.isValid(value)) {
 			throw new MechanismError(`Invalid domain for the '${name}' mechanism: '${value}'`, 'error');
@@ -163,36 +171,30 @@ module.exports = {
 		}
 	},
 	exists: {
-		pattern: /^exists:(.+)$/,
+		pattern: /^exists(:.*?)?$/,
 		validate(r) {
-			let domain = r.match(this.pattern)[1];
-			if (!tld.isValid(domain)) {
-				throw new MechanismError(`Invalid domain: '${domain}'`, 'error');
-			}
-			else {
-				return domain;
-			}
+			return domainCheck('exists', this.pattern, r);
 		}
 	},
 	include: {
 		description: 'The specified domain is searched for an \'allow\'',
-		pattern: /^include:(.+)$/,
+		pattern: /^include(:.*?)?$/,
 		validate(r) {
-			let domain = r.match(this.pattern)[1];
-			if (!tld.isValid(domain)) {
-				throw new MechanismError('Invalid domain: \'domain\'', 'error');
-			}
-			else {
-				return domain;
-			}
+			return domainCheck('include', this.pattern, r);
 		}
 	},
 	redirect: {
-		description: 'The SPF record for Value replaces the current record',
-		pattern: /redirect=(.+)/
+		description: 'The SPF record for the value replaces the current record',
+		pattern: /redirect(\=.*?)?$/,
+		validate(r) {
+			return domainCheck('redirect', this.pattern, r);
+		}
 	},
 	exp: {
 		description: 'Explanation message to send with rejection',
-		pattern: /exp=(.+)/ // Capture is a domain
+		pattern: /exp(\=.*?)?$/,
+		validate(r) {
+			return domainCheck('exp', this.pattern, r);
+		}
 	}
 };

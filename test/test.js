@@ -15,6 +15,17 @@ test('Invalid version causes error', t => {
 	});
 });
 
+test('Missing term fails', t => {
+	const m = [];
+	s.parseTerm('?', m);
+	t.deepEqual(m, [
+		{
+			message: `Unknown standalone term '?'`,
+			type: 'error'
+		}
+	]);
+});
+
 test('Can parse a good record', t => {
 	t.deepEqual(s('v=spf1 a -all'), {
 		mechanisms: [
@@ -145,3 +156,5 @@ test('Invalid ip6 CIDR fails', t => {
 		}
 	]);
 });
+
+// TODO: if term does not have "all" term at end, make sure a warning exists in the messages=

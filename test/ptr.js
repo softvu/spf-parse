@@ -12,7 +12,7 @@ test('Can parse simple ptr term', t => {
 	});
 });
 
-test('Blank a domain argument fails', t => {
+test('Blank ptr domain argument fails', t => {
 	const m = [];
 	s.parseTerm('ptr:', m);
 	t.deepEqual(m, [
@@ -23,7 +23,7 @@ test('Blank a domain argument fails', t => {
 	]);
 });
 
-test('Can parse a term with domain', t => {
+test('Can parse ptr term with domain', t => {
 	t.deepEqual(s.parseTerm('ptr:foo.com', []), {
 		prefix: '+',
 		prefixdesc: prefixes['+'],

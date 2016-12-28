@@ -18,8 +18,6 @@ const mechanismRegex = /(\+|-|~|\?)?(.+)/;
 // Description
 
 function parseTerm(term, messages) {
-	debugger;
-
 	// Match up the prospective mechanism against the mechanism regex
 	let parts = term.match(mechanismRegex);
 
@@ -33,18 +31,8 @@ function parseTerm(term, messages) {
 
 		// Check qualifier
 		if (prefix) {
-			if (PREFIXES[prefix]) {
-				record.prefix = prefix;
-				record.prefixdesc = PREFIXES[prefix];
-			}
-			else {
-				messages.push({
-					message: `Unknown qualifier: '${prefix}' in term '${term}'`,
-					type: 'error'
-				});
-
-				return;
-			}
+			record.prefix = prefix;
+			record.prefixdesc = PREFIXES[prefix];
 		}
 		else if (versionRegex.test(mechanism)) {
 			record.prefix = 'v';
@@ -55,12 +43,15 @@ function parseTerm(term, messages) {
 			record.prefixdesc = PREFIXES['+'];
 		}
 
+		let found = false;
 		for (let name in MECHANISMS) {
 			if (Object.prototype.hasOwnProperty.call(MECHANISMS, name)) {
 				const settings = MECHANISMS[name];
 
 				// Matches mechanism spec
 				if (settings.pattern.test(mechanism)) {
+					found = true;
+
 					record.type = name;
 					record.description = settings.description;
 
@@ -91,16 +82,24 @@ function parseTerm(term, messages) {
 				}
 			}
 		}
-	}
-	else {
-		// Term didn't match mechanism regex
-		messages.push({
-			message: `Unknown term "${term}"`,
-			type: 'error'
-		});
 
-		return;
+		if (!found) {
+			messages.push({
+				message: `Unknown standalone term '${mechanism}'`,
+				type: 'error'
+			});
+		}
 	}
+	// NOTE: I don't think this branch could ever be hit...
+	// else {
+	// 	// Term didn't match mechanism regex
+	// 	messages.push({
+	// 		message: `Unknown term "${term}"`,
+	// 		type: 'error'
+	// 	});
+	//
+	// 	return;
+	// }
 
 	return record;
 }
@@ -147,8 +146,9 @@ function parse(record) {
 		}
 	}
 
-	// TODO: check for this error below
+	// TODO: check for these errors below
 	// One or more mechanisms were found after the "all" mechanism. These mechanisms will be ignored.records.
+	// The "redirect" modifier will not be used, because the SPF string contains an "all" mechanism. A "redirect" modifier is only used after all mechanisms fail to match, but "all" will always match.
 
 	if (!Object.keys(records.messages).length > 0) {
 		delete records.messages;
