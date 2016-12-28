@@ -1,7 +1,7 @@
 import test from 'ava';
-import mechanisms from './mechanisms';
-import prefixes from './prefixes';
-import s from './';
+import mechanisms from '../mechanisms';
+import prefixes from '../prefixes';
+import s from '../';
 
 test('Invalid version causes error', t => {
 	t.deepEqual(s('v=spf2 a ~all'), {
@@ -71,12 +71,76 @@ test('Invalid ip4 fails', t => {
 	]);
 });
 
+test('Blank ip4 fails', t => {
+	const m = [];
+	s.parseTerm('ip4:', m);
+	t.deepEqual(m, [
+		{
+			message: `Missing or blank mandatory network specification for the 'ip4' mechanism.`,
+			type: 'error'
+		}
+	]);
+});
+
 test('Invalid ip4 CIDR fails', t => {
 	const m = [];
 	s.parseTerm('ip4:8.8.8.8/33', m);
 	t.deepEqual(m, [
 		{
 			message: `Invalid CIDR format: '8.8.8.8/33'`,
+			type: 'error'
+		}
+	]);
+});
+
+test('Can parse ip6', t => {
+	t.deepEqual(s.parseTerm('ip6:::1', []), {
+		prefix: '+',
+		prefixdesc: prefixes['+'],
+		type: 'ip6',
+		value: '::1',
+		description: mechanisms.ip6.description
+	});
+});
+
+test('Can parse ip6 with CIDR', t => {
+	t.deepEqual(s.parseTerm('ip6:::1/32', []), {
+		prefix: '+',
+		prefixdesc: prefixes['+'],
+		type: 'ip6',
+		value: '::1/32',
+		description: mechanisms.ip6.description
+	});
+});
+
+test('Blank ip6 fails', t => {
+	const m = [];
+	s.parseTerm('ip6:', m);
+	t.deepEqual(m, [
+		{
+			message: `Missing or blank mandatory network specification for the 'ip6' mechanism.`,
+			type: 'error'
+		}
+	]);
+});
+
+test('Invalid ip6 fails', t => {
+	const m = [];
+	s.parseTerm('ip6:foo', m);
+	t.deepEqual(m, [
+		{
+			message: `Invalid IPv6 address: 'foo'`,
+			type: 'error'
+		}
+	]);
+});
+
+test('Invalid ip6 CIDR fails', t => {
+	const m = [];
+	s.parseTerm('ip6:::1/720', m);
+	t.deepEqual(m, [
+		{
+			message: `Invalid CIDR format: '::1/720'`,
 			type: 'error'
 		}
 	]);

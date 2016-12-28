@@ -4,7 +4,8 @@
   "description": "Parse SPF (Sender Polify Framework) records",
   "main": "index.js",
   "scripts": {
-    "test": "xo && ava"
+    "test": "xo && ava",
+    "report": "nyc ava && nyc report --reporter=html"
   },
   "files": [
     "index.js",

@@ -67,7 +67,10 @@ function parseTerm(term, messages) {
 					if (settings.validate) {
 						try {
 							let value = settings.validate.call(settings, mechanism);
-							record.value = value;
+
+							if (typeof value !== 'undefined' && value !== null) {
+								record.value = value;
+							}
 						}
 						catch (err) {
 							if (err instanceof MechanismError) {
