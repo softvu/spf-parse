@@ -21,9 +21,15 @@
   "homepage": "https://github.com/softvu/spf-parse#readme",
   "devDependencies": {
     "ava": "^0.17.0",
+    "cz-conventional-changelog": "^1.2.0",
     "xo": "^0.17.1"
   },
   "xo": {
     "esnext": true
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
