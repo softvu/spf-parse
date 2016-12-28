@@ -36,7 +36,7 @@ function domainCheckNullable(name, pattern, term) {
 	return domainCheck(name, pattern, term, true);
 }
 
-function domainCheck(name, pattern, term, nullable = false) {
+function domainCheck(name, pattern, term, nullable) {
 	let value = term.match(pattern)[1];
 
 	if (!nullable && !value) {
