@@ -4,7 +4,7 @@
   "description": "Parse SPF (Sender Polify Framework) records",
   "main": "index.js",
   "scripts": {
-    "test": "xo && nyc ava"
+    "test": "xo && ava"
   },
   "files": [
     "index.js",
@@ -38,7 +38,9 @@
         "error",
         "stroustrup"
       ],
-      "no-debugger": ["warn"],
+      "no-debugger": [
+        "warn"
+      ],
       "no-useless-call": 0
     }
   },
@@ -48,6 +50,7 @@
     }
   },
   "dependencies": {
+    "ipaddr.js": "^1.2.0",
     "tldjs": "^1.7.0"
   }
 }

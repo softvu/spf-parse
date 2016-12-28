@@ -2,13 +2,7 @@
 
 const MechanismError = require('./mechanismerror');
 const MECHANISMS = require('./mechanisms');
-
-const QUALIFIERS = {
-	'+': 'Pass',
-	'-': 'Fail',
-	'~': 'SoftFail',
-	'?': 'Neutral'
-};
+const PREFIXES = require('./prefixes');
 
 const versionRegex = /^v=spf1/;
 const mechanismRegex = /(\+|-|~|\?)?(.+)/;
@@ -24,6 +18,8 @@ const mechanismRegex = /(\+|-|~|\?)?(.+)/;
 // Description
 
 function parseTerm(term, messages) {
+	debugger;
+
 	// Match up the prospective mechanism against the mechanism regex
 	let parts = term.match(mechanismRegex);
 
@@ -32,18 +28,18 @@ function parseTerm(term, messages) {
 	// It matched! Let's try to see which specific mechanism type it matches
 	if (parts !== null) {
 		// Break up the parts into their pieces
-		let qualifier = parts[1];
+		let prefix = parts[1];
 		let mechanism = parts[2];
 
 		// Check qualifier
-		if (qualifier) {
-			if (QUALIFIERS[qualifier]) {
-				record.prefix = qualifier;
-				record.prefixdesc = QUALIFIERS[qualifier];
+		if (prefix) {
+			if (PREFIXES[prefix]) {
+				record.prefix = prefix;
+				record.prefixdesc = PREFIXES[prefix];
 			}
 			else {
 				messages.push({
-					message: `Unknown qualifier: '${qualifier}' in term '${term}'`,
+					message: `Unknown qualifier: '${prefix}' in term '${term}'`,
 					type: 'error'
 				});
 
@@ -56,7 +52,7 @@ function parseTerm(term, messages) {
 		else {
 			// Default to "pass" qualifier
 			record.prefix = '+';
-			record.prefixdesc = QUALIFIERS['+'];
+			record.prefixdesc = PREFIXES['+'];
 		}
 
 		for (let name in MECHANISMS) {

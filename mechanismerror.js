@@ -1,3 +1,5 @@
+'use strict';
+
 function MechanismError(message, type) {
 	this.name = 'MechanismError';
 	this.message = message;

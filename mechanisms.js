@@ -1,4 +1,9 @@
+'use strict';
+
+/* eslint no-useless-escape: 0 */
+
 const tld = require('tldjs');
+const ipaddr = require('ipaddr.js');
 const MechanismError = require('./mechanismerror');
 
 // TODO: need to validate CIDRs and IPs in the patterns
@@ -20,10 +25,35 @@ module.exports = {
 		pattern: /^all$/
 	},
 	ip4: {
+		// ip4:<ip4-address>
+		// ip4:<ip4-network>/<prefix-length>
 		description: 'Match if IP is in the given range',
-		pattern: /^ip4:(.+)(\/\d+)?$/
+		pattern: /^ip4:(([\d\.]+)(\/\d+)?)$/,
+		validate(r) {
+			let parts = r.match(this.pattern);
+			let value = parts[1];
+			let ip = parts[2];
+			let cidr = parts[3];
+
+			if (!ipaddr.isValid(ip)) {
+				throw new MechanismError(`Invalid IP address: '${ip}'`, 'error');
+			}
+
+			if (cidr) {
+				try {
+					ipaddr.parseCIDR(value);
+				}
+				catch (err) {
+					throw new MechanismError(`Invalid CIDR format: '${value}'`, 'error');
+				}
+			}
+
+			return value;
+		}
 	},
 	ip6: {
+		// ip6:<ip6-address>
+		// ip6:<ip6-network>/<prefix-length>
 		description: 'Match if IPv6 is in the given range',
 		pattern: /^ip6:(.+)(\/\d+)?$/
 	},

@@ -5,4 +5,4 @@ node_js:
   - '6'
   - '4'
 after_success:
-  - '[ -z "$COVERALLS_REPO_TOKEN" ] && ./node_modules/.bin/nyc report --reporter=text-lcov | ./node_modules/.bin/coveralls'
+  - '[ -z "$COVERALLS_REPO_TOKEN" ] && nyc ava && ./node_modules/.bin/nyc report --reporter=text-lcov | ./node_modules/.bin/coveralls'
