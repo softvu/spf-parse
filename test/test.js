@@ -5,6 +5,7 @@ import s from '../';
 
 test('Invalid version causes error', t => {
 	t.deepEqual(s('v=spf2 a ~all'), {
+		valid: false,
 		mechanisms: [],
 		messages: [
 			{
@@ -28,6 +29,7 @@ test('Missing term fails', t => {
 
 test('Can parse a good record', t => {
 	t.deepEqual(s('v=spf1 a -all'), {
+		valid: true,
 		mechanisms: [
 			{
 				prefix: 'v',

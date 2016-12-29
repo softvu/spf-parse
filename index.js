@@ -107,7 +107,9 @@ function parse(record) {
 
 	let records = {
 		mechanisms: [],
-		messages: []
+		messages: [],
+		// Valid flag will be changed at end of function
+		valid: false
 	};
 
 	if (!versionRegex.test(record)) {
@@ -206,6 +208,8 @@ function parse(record) {
 	if (!Object.keys(records.messages).length > 0) {
 		delete records.messages;
 	}
+
+	records.valid = true;
 
 	return records;
 }
