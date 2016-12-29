@@ -157,4 +157,35 @@ test('Invalid ip6 CIDR fails', t => {
 	]);
 });
 
-// TODO: if term does not have "all" term at end, make sure a warning exists in the messages=
+test('Policy string without "all" or "redirect" at the end will produce a warning', t => {
+	let records = s('v=spf1 include:foo.com');
+
+	t.truthy(records.messages && records.messages.find(x => /should always either use an "all" mechanism/i.test(x.message)));
+});
+
+test('Terms after "all" cause a warning', t => {
+	let records = s('v=spf1 ~all a');
+
+	t.truthy(records.messages && records.messages.find(x => /one or more mechanisms were found after the "all" mechanism/i.test(x.message)));
+});
+
+test(`Give a warning if there's a redirect modifier AND an "all" mechanism`, t => {
+	let records = s('v=spf1 redirect=foo.com ~all');
+
+	t.truthy(records.messages && records.messages.find(x => /The "redirect" modifier will not be used, because the SPF string contains an "all" mechanism/i.test(x.message)));
+});
+
+test(`Give a warning if there's duplicate mechanisms`, t => {
+	let records = s('v=spf1 a a ~all');
+
+	t.truthy(records.messages && records.messages.find(x => /one or more duplicate/i.test(x.message)));
+});
+
+test(`Give an error if there's duplicate modifier`, t => {
+	let records = s('v=spf1 redirect=foo.com redirect=bar.com ~all');
+
+	t.truthy(records.messages && records.messages.find(x => {
+		return /Modifiers like "redirect" may appear only once in an SPF string/i.test(x.message) &&
+		x.type === 'error';
+	}));
+});

@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "ipaddr.js": "^1.2.0",
+    "lodash": "^4.17.3",
     "tldjs": "^1.7.0"
   }
 }

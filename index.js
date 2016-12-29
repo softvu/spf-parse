@@ -7,10 +7,7 @@ const PREFIXES = require('./prefixes');
 const versionRegex = /^v=spf1/;
 const mechanismRegex = /(\+|-|~|\?)?(.+)/;
 
-// TODO: Include warning message in the return object
-// SPF strings should always either use an "all" mechanism
-//   or a "redirect" modifier to explicitly terminate processing.
-
+// * Values that will be set for every mechanism:
 // Prefix
 // Type
 // Value
@@ -72,9 +69,9 @@ function parseTerm(term, messages) {
 								});
 								break;
 							}
-							else {
-								throw err;
-							}
+							// else {
+							// 	throw err;
+							// }
 						}
 					}
 
@@ -125,6 +122,36 @@ function parse(record) {
 
 	let terms = record.split(/\s+/);
 
+	// Give an error for duplicate Modifiers
+	let duplicateMods = terms
+												.filter(x => new RegExp('=').test(x))
+												.map(x => x.match(/^(.*?)=/)[1])
+												.filter((x, i, arr) => {
+													return arr.includes(x, i + 1);
+												});
+
+	if (duplicateMods && duplicateMods.length > 0) {
+		records.messages.push({
+			type: 'error',
+			message: `Modifiers like "${duplicateMods[0]}" may appear only once in an SPF string`
+		});
+		return records;
+	}
+
+	// Give warning for duplicate mechanisms
+	let duplicateMechs = terms
+												.map(x => x.replace(/^(\+|-|~|\?)/, ''))
+												.filter((x, i, arr) => {
+													return arr.includes(x, i + 1);
+												});
+
+	if (duplicateMechs && duplicateMechs.length > 0) {
+		records.messages.push({
+			type: 'warning',
+			message: 'One or more duplicate mechanisms were found in the policy'
+		});
+	}
+
 	for (let term of terms) {
 		let mechanism = parseTerm(term, records.messages);
 
@@ -133,23 +160,49 @@ function parse(record) {
 		}
 	}
 
-	// TODO: check for duplicate mechanisms, which is a warning
-
 	// See if there's an "all" or "redirect" at the end of the policy
-	if (records.length > 0) {
-		let lastMech = records[records.length - 1];
-		if (lastMech.type !== 'all' && lastMech !== 'redirect') {
+	if (records.mechanisms.length > 0) {
+		// More than one modifier like redirect or exp is invalid
+		// if (records.mechanisms.filter(x => x.type === 'redirect').length > 1 || records.mechanisms.filter(x => x.type === 'exp').length > 1) {
+		// 	records.messages.push({
+		// 		type: 'error',
+		// 		message: 'Modifiers like "redirect" and "exp" can only appear once in an SPF string'
+		// 	});
+		// 	return records;
+		// }
+
+		// let lastMech = records.mechanisms[records.mechanisms.length - 1];
+		let redirectMech = records.mechanisms.find(x => x.type === 'redirect');
+		let allMech = records.mechanisms.find(x => x.type === 'all');
+		// if (lastMech.type !== 'all' && lastMech !== 'redirect') {
+		if (!allMech && !redirectMech) {
 			records.messages.push({
 				type: 'warning',
 				message: 'SPF strings should always either use an "all" mechanism or a "redirect" modifier to explicitly terminate processing.'
 			});
 		}
+
+		// Give a warning if "all" is not last mechanism in policy
+		let allIdx = records.mechanisms.findIndex(x => x.type === 'all');
+		if (allIdx > -1) {
+			if (allIdx < records.mechanisms.length - 1) {
+				records.messages.push({
+					type: 'warning',
+					message: 'One or more mechanisms were found after the "all" mechanism. These mechanisms will be ignored'
+				});
+			}
+		}
+
+		// Give a warning if there's a redirect modifier AND an "all" mechanism
+		if (redirectMech && allMech) {
+			records.messages.push({
+				type: 'warning',
+				message: 'The "redirect" modifier will not be used, because the SPF string contains an "all" mechanism. A "redirect" modifier is only used after all mechanisms fail to match, but "all" will always match'
+			});
+		}
 	}
 
-	// TODO: check for these errors below
-	// One or more mechanisms were found after the "all" mechanism. These mechanisms will be ignored.records.
-	// The "redirect" modifier will not be used, because the SPF string contains an "all" mechanism. A "redirect" modifier is only used after all mechanisms fail to match, but "all" will always match.
-
+	// If there are no messages, delete the key from "records"
 	if (!Object.keys(records.messages).length > 0) {
 		delete records.messages;
 	}
