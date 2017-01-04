@@ -1,6 +1,6 @@
 {
   "name": "spf-parse",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Parse SPF (Sender Polify Framework) records",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,13 @@
     "type": "git",
     "url": "git+https://github.com/softvu/spf-parse.git"
   },
+  "keywords": [
+    "spf",
+    "email",
+    "mail",
+    "policy",
+    "parse"
+  ],
   "author": "Brian Hann",
   "license": "MIT",
   "bugs": {
@@ -27,7 +34,6 @@
     "coveralls": "^2.11.15",
     "cz-conventional-changelog": "^1.2.0",
     "nyc": "^10.0.0",
-    "tap": "^8.0.1",
     "xo": "^0.17.1"
   },
   "xo": {
