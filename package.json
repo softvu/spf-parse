@@ -1,6 +1,6 @@
 {
   "name": "spf-parse",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Parse SPF (Sender Polify Framework) records",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,8 @@
   "files": [
     "index.js",
     "mechanisms.js",
-    "mechanismerror.js"
+    "mechanismerror.js",
+    "prefixes.js
   ],
   "repository": {
     "type": "git",
