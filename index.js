@@ -4,8 +4,8 @@ const MechanismError = require('./mechanismerror');
 const MECHANISMS = require('./mechanisms');
 const PREFIXES = require('./prefixes');
 
-const versionRegex = /^v=spf1/;
-const mechanismRegex = /(\+|-|~|\?)?(.+)/;
+const versionRegex = /^v=spf1/i;
+const mechanismRegex = /(\+|-|~|\?)?(.+)/i;
 
 // * Values that will be set for every mechanism:
 // Prefix

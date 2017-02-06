@@ -61,7 +61,7 @@ function domainCheck(name, pattern, term, nullable) {
 module.exports = {
 	version: {
 		description: 'The SPF record version',
-		pattern: /^v=(.+)$/,
+		pattern: /^v=(.+)$/i,
 		validate(r) {
 			let version = r.match(this.pattern)[1];
 
@@ -75,13 +75,13 @@ module.exports = {
 	},
 	all: {
 		description: 'Always matches. It goes at the end of your record',
-		pattern: /^all$/
+		pattern: /^all$/i
 	},
 	ip4: {
 		// ip4:<ip4-address>
 		// ip4:<ip4-network>/<prefix-length>
 		description: 'Match if IP is in the given range',
-		pattern: /^ip4:(([\d\.]*)(\/\d+)?)$/,
+		pattern: /^ip4:(([\d\.]*)(\/\d+)?)$/i,
 		validate(r) {
 			let parts = r.match(this.pattern);
 			let value = parts[1];
@@ -112,7 +112,7 @@ module.exports = {
 		// ip6:<ip6-address>
 		// ip6:<ip6-network>/<prefix-length>
 		description: 'Match if IPv6 is in the given range',
-		pattern: /^ip6:((.*?)(\/\d+)?)$/,
+		pattern: /^ip6:((.*?)(\/\d+)?)$/i,
 		validate(r) {
 			let parts = r.match(this.pattern);
 			let value = parts[1];
@@ -145,7 +145,7 @@ module.exports = {
 		// a:<domain>
 		// a:<domain>/<prefix-length>
 		description: 'Match if IP has a DNS \'A\' record in given domain',
-		pattern: /a((:.*?)?(\/\d*)?)?$/,
+		pattern: /a((:.*?)?(\/\d*)?)?$/i,
 		validate(r) {
 			return domainPrefixCheck('a', this.pattern, r);
 		}
@@ -156,7 +156,7 @@ module.exports = {
 		// mx:<domain>
 		// mx:<domain>/<prefix-length>
 		description: '',
-		pattern: /mx((:.*?)?(\/\d*)?)?$/,
+		pattern: /mx((:.*?)?(\/\d*)?)?$/i,
 		validate(r) {
 			return domainPrefixCheck('mx', this.pattern, r);
 		}
@@ -165,34 +165,34 @@ module.exports = {
 		// ptr
 		// ptr:<domain>
 		description: 'Match if IP has a DNS \'PTR\' record within given domain',
-		pattern: /^ptr(:.*?)?$/,
+		pattern: /^ptr(:.*?)?$/i,
 		validate(r) {
 			return domainCheckNullable('ptr', this.pattern, r);
 		}
 	},
 	exists: {
-		pattern: /^exists(:.*?)?$/,
+		pattern: /^exists(:.*?)?$/i,
 		validate(r) {
 			return domainCheck('exists', this.pattern, r);
 		}
 	},
 	include: {
 		description: 'The specified domain is searched for an \'allow\'',
-		pattern: /^include(:.*?)?$/,
+		pattern: /^include(:.*?)?$/i,
 		validate(r) {
 			return domainCheck('include', this.pattern, r);
 		}
 	},
 	redirect: {
 		description: 'The SPF record for the value replaces the current record',
-		pattern: /redirect(\=.*?)?$/,
+		pattern: /redirect(\=.*?)?$/i,
 		validate(r) {
 			return domainCheck('redirect', this.pattern, r);
 		}
 	},
 	exp: {
 		description: 'Explanation message to send with rejection',
-		pattern: /exp(\=.*?)?$/,
+		pattern: /exp(\=.*?)?$/i,
 		validate(r) {
 			return domainCheck('exp', this.pattern, r);
 		}

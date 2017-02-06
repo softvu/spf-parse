@@ -191,3 +191,13 @@ test(`Give an error if there's duplicate modifier`, t => {
 		x.type === 'error';
 	}));
 });
+
+test(`Parsing ignore SPF case/capitalization`, t => {
+	let spfStr = 'V=SPF1 INCLUDE:BAZ.COM A:BAZ.COM MX:MAIL.BAZ.COM PTR:BAZ.COM EXISTS:BAZ.COM IP4:127.0.0.1 IP6:::1/32 EXP=explain.foo.com';
+
+	let records1 = s(`${spfStr} ~ALL`);
+	t.falsy(records1.messages);
+
+	let records2 = s(`${spfStr} +REDIRECT=FOO.COM`);
+	t.falsy(records2.messages);
+});
