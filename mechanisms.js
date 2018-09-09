@@ -123,7 +123,7 @@ module.exports = {
 				throw new MechanismError(`Missing or blank mandatory network specification for the 'ip6' mechanism.`, 'error');
 			}
 
-			if (!ipaddr.isValid(ip)) {
+			if (!ipaddr.IPv6.isValid(ip)) {
 				throw new MechanismError(`Invalid IPv6 address: '${ip}'`, 'error');
 			}
 
