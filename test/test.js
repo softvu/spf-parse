@@ -148,6 +148,17 @@ test('Invalid ip6 fails', t => {
 	]);
 });
 
+test('IPv4 is not an IPv6', t => {
+	const m = [];
+	s.parseTerm('ip6:127.0.0.1', m);
+	t.deepEqual(m, [
+		{
+			message: `Invalid IPv6 address: '127.0.0.1'`,
+			type: 'error'
+		}
+	]);
+});
+
 test('Invalid ip6 CIDR fails', t => {
 	const m = [];
 	s.parseTerm('ip6:::1/720', m);
